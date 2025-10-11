@@ -1,0 +1,8 @@
+[phases.setup]
+node_version = "18.x"
+
+[phases.install]
+cmds = ['npm ci']
+
+[start]
+cmd = 'npm start'
