@@ -93,6 +93,7 @@ exports.verifyFirebaseToken = async (req, res, next) => {
       };
       
       console.log('✅ Firebase token verified for user:', decodedToken.email, 'UID:', decodedToken.uid);
+      console.log('🔐 Setting req.user.id to:', decodedToken.uid);
       next();
     } catch (error) {
       console.error('❌ Firebase token verification failed:', error.message);
