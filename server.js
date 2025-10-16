@@ -49,7 +49,8 @@ app.use(cors({
       process.env.FRONTEND_URL,
       process.env.CORS_ORIGIN,
       'https://habit-tracker-frontend.onrender.com',
-      'https://elevate2-production.up.railway.app' // Your Railway frontend domain
+      'https://elevate2-production.up.railway.app', // Old Railway frontend domain
+      'https://elevatefinalfront-production.up.railway.app' // Current Railway frontend domain
     ].filter(Boolean);
     
     if (allowedOrigins.includes(origin)) {
