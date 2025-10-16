@@ -135,6 +135,23 @@ app.use('/api/habits', require('./routes/habits'));
 app.use('/api/logs', require('./routes/logs'));
 app.use('/api/analytics', require('./routes/analytics'));
 
+// Root API endpoint
+app.get('/api', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Habit Tracker API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      categories: '/api/categories',
+      habits: '/api/habits',
+      logs: '/api/logs',
+      analytics: '/api/analytics'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
