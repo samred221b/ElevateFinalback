@@ -2,12 +2,12 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Category = require('../models/Category');
 const Habit = require('../models/Habit');
-const { protect } = require('../middleware/auth');
+const { verifyFirebaseToken } = require('../middleware/firebaseAuth');
 
 const router = express.Router();
 
-// All routes are protected
-router.use(protect);
+// Apply Firebase authentication to all routes
+router.use(verifyFirebaseToken);
 
 // @desc    Get all categories for user
 // @route   GET /api/categories
@@ -85,9 +85,13 @@ router.post('/', [
     .withMessage('Icon must be between 1 and 10 characters')
 ], async (req, res) => {
   try {
+    console.log('📝 Creating category - User ID:', req.user.id);
+    console.log('📝 Request body:', req.body);
+    
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.error('❌ Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -98,12 +102,14 @@ router.post('/', [
     const { name, description, color, icon, order } = req.body;
 
     // Check if category name already exists for this user
+    console.log('🔍 Checking for existing category...');
     const existingCategory = await Category.findOne({
       user: req.user.id,
       name: { $regex: new RegExp(`^${name}$`, 'i') }
     });
 
     if (existingCategory) {
+      console.log('⚠️ Category already exists:', name);
       return res.status(400).json({
         success: false,
         message: 'Category with this name already exists'
@@ -118,6 +124,15 @@ router.post('/', [
       categoryOrder = lastCategory ? lastCategory.order + 1 : 1;
     }
 
+    console.log('✅ Creating category with data:', {
+      name,
+      description,
+      color,
+      icon: icon || '📝',
+      user: req.user.id,
+      order: categoryOrder
+    });
+
     const category = await Category.create({
       name,
       description,
@@ -127,16 +142,20 @@ router.post('/', [
       order: categoryOrder
     });
 
+    console.log('✅ Category created successfully:', category._id);
+
     res.status(201).json({
       success: true,
       message: 'Category created successfully',
       data: category
     });
   } catch (error) {
-    console.error('Create category error:', error);
+    console.error('❌ Create category error:', error);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Server error creating category'
+      message: 'Server error creating category',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -247,20 +266,30 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    // Check if category has habits
+    // Delete all habits in this category first
     const habitsCount = await Habit.countDocuments({ category: req.params.id });
+    
     if (habitsCount > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot delete category. It contains ${habitsCount} habit(s). Please move or delete the habits first.`
-      });
+      // Get all habit IDs in this category
+      const habits = await Habit.find({ category: req.params.id }).select('_id');
+      const habitIds = habits.map(habit => habit._id);
+      
+      // Delete all logs for these habits
+      const Log = require('../models/Log');
+      await Log.deleteMany({ habit: { $in: habitIds } });
+      
+      // Delete the habits
+      await Habit.deleteMany({ category: req.params.id });
     }
 
+    // Delete the category
     await Category.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,
-      message: 'Category deleted successfully'
+      message: habitsCount > 0 
+        ? `Category and ${habitsCount} habit(s) deleted successfully`
+        : 'Category deleted successfully'
     });
   } catch (error) {
     console.error('Delete category error:', error);

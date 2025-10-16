@@ -27,8 +27,7 @@ const habitSchema = new mongoose.Schema({
     required: [true, 'Habit must belong to a category']
   },
   user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: [true, 'Habit must belong to a user']
   },
   frequency: {

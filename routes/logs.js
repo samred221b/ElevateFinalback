@@ -2,12 +2,12 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Log = require('../models/Log');
 const Habit = require('../models/Habit');
-const { protect } = require('../middleware/auth');
+const { verifyFirebaseToken } = require('../middleware/firebaseAuth');
 
 const router = express.Router();
 
-// All routes are protected
-router.use(protect);
+// Apply Firebase authentication to all routes
+router.use(verifyFirebaseToken);
 
 // @desc    Get logs for user
 // @route   GET /api/logs

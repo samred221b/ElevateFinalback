@@ -126,9 +126,9 @@ const connectDB = async () => {
 
 connectDB();
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
+// Routes (Firebase auth - no backend auth needed)
+// app.use('/api/auth', require('./routes/auth')); // Removed - using Firebase
+// app.use('/api/users', require('./routes/users')); // Removed - using Firebase
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/habits', require('./routes/habits'));
 app.use('/api/logs', require('./routes/logs'));

@@ -2,12 +2,12 @@ const express = require('express');
 const Log = require('../models/Log');
 const Habit = require('../models/Habit');
 const Category = require('../models/Category');
-const { protect } = require('../middleware/auth');
+const { verifyFirebaseToken } = require('../middleware/firebaseAuth');
 
 const router = express.Router();
 
-// All routes are protected
-router.use(protect);
+// Apply Firebase authentication to all routes
+router.use(verifyFirebaseToken);
 
 // @desc    Get dashboard analytics
 // @route   GET /api/analytics/dashboard

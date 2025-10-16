@@ -7,8 +7,7 @@ const logSchema = new mongoose.Schema({
     required: [true, 'Log must belong to a habit']
   },
   user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: [true, 'Log must belong to a user']
   },
   date: {

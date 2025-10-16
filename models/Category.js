@@ -22,8 +22,7 @@ const categorySchema = new mongoose.Schema({
     default: '📝'
   },
   user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: [true, 'Category must belong to a user']
   },
   isDefault: {
