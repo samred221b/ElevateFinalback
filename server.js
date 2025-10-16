@@ -25,22 +25,12 @@ app.use(morgan('combined'));
 // CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
+    console.log('🌐 CORS check for origin:', origin);
+    
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    // In development, allow all localhost and local network origins
-    if (process.env.NODE_ENV === 'development') {
-      // Allow localhost
-      if (origin.includes('localhost')) {
-        return callback(null, true);
-      }
-      // Allow local network IPs (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
-      if (origin.match(/^https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/)) {
-        return callback(null, true);
-      }
-    }
-    
-    // Allow specific origins
+    // Define all allowed origins
     const allowedOrigins = [
       'http://localhost:5174',
       'http://localhost:5173', 
@@ -53,10 +43,27 @@ app.use(cors({
       'https://elevatefinalfront-production.up.railway.app' // Current Railway frontend domain
     ].filter(Boolean);
     
+    // In development, also allow localhost and local network origins
+    if (process.env.NODE_ENV === 'development') {
+      // Allow localhost
+      if (origin.includes('localhost')) {
+        console.log('✅ CORS allowed: localhost origin');
+        return callback(null, true);
+      }
+      // Allow local network IPs (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+      if (origin.match(/^https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/)) {
+        console.log('✅ CORS allowed: local network origin');
+        return callback(null, true);
+      }
+    }
+    
+    // Check allowed origins
     if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS allowed: origin in allowedOrigins list');
       callback(null, true);
     } else {
       console.warn('⚠️ CORS blocked origin:', origin);
+      console.log('📋 Allowed origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
