@@ -114,9 +114,12 @@ router.post('/', [
     .optional()
     .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
     .withMessage('Reminder time must be in HH:MM format')
-], async (req, res) => {
-  try {
-    // Check for validation errors
+  ], async (req, res) => {
+    try {
+      console.log('🎯 Creating habit for user:', req.user?.id || 'NO USER');
+      console.log('📝 Habit data:', { name: req.body.name, category: req.body.category });
+      
+      // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
