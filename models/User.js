@@ -79,6 +79,26 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: Date.now
+  },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationCode: {
+    type: String,
+    default: null
+  },
+  emailVerificationExpires: {
+    type: Date,
+    default: null
+  },
+  passwordResetCode: {
+    type: String,
+    default: null
+  },
+  passwordResetExpires: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true,
@@ -188,6 +208,68 @@ userSchema.methods.updateStats = async function() {
   } catch (error) {
     console.error('Error updating user stats:', error);
   }
+};
+
+// Generate email verification code
+userSchema.methods.generateEmailVerificationCode = function() {
+  // Generate 6-digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  // Set code and expiration (15 minutes from now)
+  this.emailVerificationCode = code;
+  this.emailVerificationExpires = new Date(Date.now() + 15 * 60 * 1000);
+  
+  return code;
+};
+
+// Verify email verification code
+userSchema.methods.verifyEmailCode = function(code) {
+  if (!this.emailVerificationCode || !this.emailVerificationExpires) {
+    return false;
+  }
+  
+  // Check if code matches and hasn't expired
+  if (this.emailVerificationCode === code && this.emailVerificationExpires > new Date()) {
+    this.isEmailVerified = true;
+    this.emailVerificationCode = null;
+    this.emailVerificationExpires = null;
+    return true;
+  }
+  
+  return false;
+};
+
+// Generate password reset code
+userSchema.methods.generatePasswordResetCode = function() {
+  // Generate 6-digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  // Set code and expiration (15 minutes from now)
+  this.passwordResetCode = code;
+  this.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
+  
+  return code;
+};
+
+// Verify password reset code
+userSchema.methods.verifyPasswordResetCode = function(code) {
+  if (!this.passwordResetCode || !this.passwordResetExpires) {
+    return false;
+  }
+  
+  // Check if code matches and hasn't expired
+  if (this.passwordResetCode === code && this.passwordResetExpires > new Date()) {
+    return true;
+  }
+  
+  return false;
+};
+
+// Reset password with code
+userSchema.methods.resetPassword = function(newPassword) {
+  this.password = newPassword;
+  this.passwordResetCode = null;
+  this.passwordResetExpires = null;
 };
 
 module.exports = mongoose.model('User', userSchema);
